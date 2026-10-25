@@ -31,7 +31,7 @@ File names follow the ADR convention: lowercase, dashes, and a present-tense imp
 
 | Document | Answers | Changes when |
 |---|---|---|
-| **ADR** | *Why* did we choose this architecture, and what follows from it? | A decision is made, amended or superseded |
+| **ADR** | *Why* I chose this architecture, and what follows from it? | A decision is made, amended or superseded |
 | **SRS** | *What* must the system do, and how well? | Requirements change |
 
 Every requirement in the SRS links to the ADR that motivates it, and every ADR links back to the
