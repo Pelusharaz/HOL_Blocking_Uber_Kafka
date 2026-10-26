@@ -19,6 +19,7 @@ recommends, together with a filled-in example for our earlier case study:
     ├── adr
     │   ├── template.md                      # ADR template (Michael Nygard style)
     │   └── adopt-consumer-proxy.md          # ADR-0001: the decision behind the SRS
+    │   └── choose-at-least-once-delivery.md # ADR-0002: delivery semantics
     └── srs
         ├── srs-template.md                  # blank, reusable SRS template
         └── define-consumer-proxy-requirements.md   # SRS filled in for this project

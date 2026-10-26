@@ -55,7 +55,7 @@ We will introduce a **consumer proxy layer** between Kafka and consumer services
 - Misconfiguration could affect many consumer services at once.
 
 **Follow-up ADRs (to write)**
-- ADR-0002: Choose at-least-once delivery with idempotent consumers.
+- [ADR-0002](choose-at-least-once-delivery.md): Choose at-least-once delivery with idempotent     consumers.
 - ADR-0003: Define the per-key ordering mode.
 - ADR-0004: Choose retry and dead-letter topic policy.
 
