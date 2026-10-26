@@ -3,7 +3,7 @@
 | Field | Value |
 |---|---|
 | **Status** | Proposed (academic case study) |
-| **Date** | 2026-10-25 |
+| **Date** | 2026-10-26 |
 | **Deciders** | [Pelu Jeremiah] (student architect) |
 | **Depends on** | [ADR-0001: Adopt a consumer proxy](adopt-consumer-proxy.md) |
 | **Related SRS** | [define-consumer-proxy-requirements.md](../srs/define-consumer-proxy-requirements.md): FR-03, FR-05, FR-06, FR-14, NFR-R1, NFR-C1 |
