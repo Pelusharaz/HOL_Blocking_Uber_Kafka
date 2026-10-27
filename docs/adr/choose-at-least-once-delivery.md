@@ -3,7 +3,7 @@
 | Field | Value |
 |---|---|
 | **Status** | Proposed (academic case study) |
-| **Date** | 2026-10-26 |
+| **Date** | 2026-10-25 |
 | **Deciders** | [Pelu Jeremiah] (student architect) |
 | **Depends on** | [ADR-0001: Adopt a consumer proxy](adopt-consumer-proxy.md) |
 | **Related SRS** | [define-consumer-proxy-requirements.md](../srs/define-consumer-proxy-requirements.md): FR-03, FR-05, FR-06, FR-14, NFR-R1, NFR-C1 |
@@ -58,7 +58,7 @@ We will provide **at-least-once delivery** and require consumers to be **idempot
 
 **Follow-up**
 - Write idempotency guidance for service teams (SRS open issue OI-04).
-- ADR-0004 (retry and dead-letter policy) must state the maximum redelivery window that sizes the deduplication window.
+- [ADR-0004](choose-retry-and-dead-letter-policy.md) (retry and dead-letter policy) states the maximum redelivery window that sizes the deduplication window.
 
 **Review.** One month after any trial, count duplicate deliveries and duplicated side effects, and compare with the SRS evaluation plan (section 5).
 
@@ -74,4 +74,5 @@ We will provide **at-least-once delivery** and require consumers to be **idempot
 
 | Date | Change | Author |
 |---|---|---|
-| 2026-10-25 | Created | [pelu Jeremiah] |
+| 2026-10-25 | Created | [Pelu Jeremiah] |
+| 2026-10-27 | Link to ADR-0004 added; redelivery window now defined there (about 13 minutes with default values) | [Pelu Jeremiah] |

@@ -3,11 +3,11 @@
 | Field | Value |
 |---|---|
 | **Status** | Proposed (academic case study) |
-| **Version** | 0.1 |
+| **Version** | 0.2 |
 | **Date** | 2026-10-25 |
-| **Authors** | [Pelu Jeremiah] |
-| **Reviewers / approvers** | [Dr. Adamkó Attila] |
-| **Related ADRs** | [ADR-0001: Adopt a consumer proxy](../adr/adopt-consumer-proxy.md) |
+| **Authors** | [pelu Jeremiah] |
+| **Reviewers / approvers** | [Dr. Attila Adamkó Tamás] |
+| **Related ADRs** | [ADR-0001](../adr/adopt-consumer-proxy.md), [ADR-0002](../adr/choose-at-least-once-delivery.md), [ADR-0003](../adr/define-per-key-ordering-mode.md), [ADR-0004](../adr/choose-retry-and-dead-letter-policy.md) |
 
 **Evidence labels:** **[Fact]** documented and cited, **[Assumption]** not verified, **[Proposal]** our own design.
 These are **proposed** requirements derived from a public case study. They are **not** Uber's internal requirements.
@@ -123,11 +123,11 @@ Kafka cluster; containerised proxy instances horizontally scaled; gRPC between p
 | FR-03 | The proxy shall require an ack or nack for every delivered message. | Must | Enables per-message progress tracking | ADR-0001, ADR-0002 | Test | Proposal |
 | FR-04 | The proxy shall allow up to *N* in-flight messages per partition, where *N* is configurable per consumer group. | Must | Decouples parallelism from partition count | ADR-0001 | Load test | Proposal |
 | FR-05 | The proxy shall commit to Kafka only the highest contiguous acknowledged offset. | Must | Prevents message loss when processing is out of order | ADR-0001, ADR-0002 | Fault-injection test | Proposal |
-| FR-06 | On nack or timeout, the proxy shall retry the message up to a configurable number of attempts with backoff, via a retry topic. | Must | Resilience without blocking | ADR-0001, ADR-0002 | Test | Proposal |
-| FR-07 | After retries are exhausted, the proxy shall publish the message to a dead-letter topic with failure metadata and treat it as resolved for offset purposes. | Must | Lets the commit advance past poison messages | ADR-0001 | Test | Proposal |
-| FR-08 | The proxy shall detect a possible HOL block when the oldest unacknowledged message in a partition exceeds a configurable age while newer messages are acknowledged. | Must | Early detection; Uber describes detection and mitigation steps | ADR-0001; Uber blog | Fault-injection test | Fact (concept) / Proposal (rule) |
-| FR-09 | When HOL blocking is detected, the proxy shall move the blocked message to a retry or dead-letter topic so that the commit can advance. | Must | Mitigation | ADR-0001; Uber blog | Fault-injection test | Fact (concept) / Proposal (rule) |
-| FR-10 | The proxy should offer an optional per-key ordering mode in which messages with the same key are delivered one at a time in order. | Should | Preserves ordering where needed | ADR-0001 (ADR-0003 to follow) | Ordering test | **Proposal, our extension; not claimed for Uber** |
+| FR-06 | On nack or timeout, the proxy shall retry the message up to a configurable number of attempts with backoff, via a retry topic. | Must | Resilience without blocking | ADR-0001, ADR-0002, ADR-0004 | Test | Proposal |
+| FR-07 | After retries are exhausted, the proxy shall publish the message to a dead-letter topic with failure metadata and treat it as resolved for offset purposes. | Must | Lets the commit advance past poison messages | ADR-0001, ADR-0004 | Test | Proposal |
+| FR-08 | The proxy shall detect a possible HOL block when the oldest unacknowledged message in a partition exceeds a configurable age while newer messages are acknowledged. | Must | Early detection; Uber describes detection and mitigation steps | ADR-0001, ADR-0004; Uber blog | Fault-injection test | Fact (concept) / Proposal (rule) |
+| FR-09 | When HOL blocking is detected, the proxy shall move the blocked message to a retry or dead-letter topic so that the commit can advance. | Must | Mitigation | ADR-0001, ADR-0004; Uber blog | Fault-injection test | Fact (concept) / Proposal (rule) |
+| FR-10 | The proxy should offer an optional per-key ordering mode in which messages with the same key are delivered one at a time in order. | Should | Preserves ordering where needed | ADR-0001, ADR-0003 | Ordering test | **Proposal, our extension; not claimed for Uber** |
 | FR-11 | The proxy shall isolate consumer groups from one another so that a slow service cannot exhaust resources of another. | Should | Fault isolation | ADR-0001 | Load test | Proposal |
 | FR-12 | The proxy shall let an authorised engineer register or change a consumer group's endpoint, concurrency and retry policy without redeploying services. | Should | Operability | ADR-0001 | Demo | Proposal |
 | FR-13 | The proxy shall expose metrics for consumer lag, in-flight count, ack latency, retry count, DLQ count and HOL events. | Must | Needed to evaluate the solution | ADR-0001 | Inspection | Proposal |
@@ -140,7 +140,7 @@ Kafka cluster; containerised proxy instances horizontally scaled; gRPC between p
 |---|---|---|---|---|---|---|
 | NFR-P1 | Performance | Proxy-added latency shall be at most **10 ms at p99** under nominal load. | Must | ADR-0001 negative consequence (extra hop) | Benchmark | Assumption |
 | NFR-P2 | Performance | End-to-end event latency p99 with injected slow messages shall be lower than the direct-consumer baseline. | Must | Problem statement | A/B test | Proposal |
-| NFR-P3 | Performance | A blocked message shall be removed from the commit path within a configurable time (**default 60 s**). | Must | FR-08, FR-09 | Fault injection | Assumption |
+| NFR-P3 | Performance | A blocked message shall be removed from the commit path within a configurable time (**default 60 s**). | Must | FR-08, FR-09; ADR-0004 | Fault injection | Assumption |
 | NFR-S1 | Scalability | Throughput for a topic shall increase when worker instances are added beyond the number of partitions. | Must | Root cause: parallelism = partitions | Load test | Proposal |
 | NFR-R1 | Reliability | The proxy shall provide at-least-once delivery with no loss of acknowledged or unacknowledged messages. | Must | ADR-0001, ADR-0002 | Fault injection | Proposal |
 | NFR-R2 | Reliability | After a proxy instance failure, processing shall resume within **30 s**. | Should | ADR-0001 risk | Chaos test | Assumption |
@@ -158,7 +158,7 @@ Kafka cluster; containerised proxy instances horizontally scaled; gRPC between p
 |---|---|---|---|
 | Symptom: consumer lag and latency spikes | FR-13, NFR-P2 | ADR-0001 | A/B test with injected slow messages |
 | Root cause 1: ordering unit = parallelism unit | FR-04, FR-10, NFR-S1 | ADR-0001, ADR-0003 | Load and ordering tests |
-| Root cause 2: single sequential offset commit | FR-03, FR-05, FR-07, FR-09, FR-14 | ADR-0001 | Fault-injection tests |
+| Root cause 2: single sequential offset commit | FR-03, FR-05, FR-07, FR-09, FR-14 | ADR-0001, ADR-0002, ADR-0004 | Fault-injection tests |
 | Root cause 3: consume logic embedded in every service | FR-02, FR-12, NFR-M1 | ADR-0001 | Contract test, demo |
 | Consequence: scalability cap and partition-level unavailability | NFR-S1, NFR-P3 | ADR-0001 | Load and fault-injection tests |
 | New risks: extra hop, proxy as critical component, duplicates | NFR-P1, NFR-R2, NFR-A1, NFR-C1 | ADR-0001, ADR-0002 | Benchmark, chaos test, review |
@@ -181,20 +181,21 @@ with deliberately injected slow and poison messages.
 ## 6. Open issues and risks
 | ID | Issue / risk | Owner | Due | Status |
 |---|---|---|---|---|
-| OI-01 | Validate all numeric targets (assumption A-03) with a prototype | [Pelu Jeremiah] | TBD | Open |
-| OI-02 | Decide the retry and dead-letter policy (ADR-0004) | [Pelu Jeremiah] | TBD | Open |
-| OI-03 | Check whether Kafka-native queue-style consumption (share groups, KIP-932) meets the need in the Kafka version in use | [Pelu Jeremiah] | TBD | Open |
-| OI-04 | Define the idempotency guidance for service teams (follow-up of ADR-0002) | [Pelu Jeremiah] | TBD | Open |
+| OI-01 | Validate all numeric targets (assumption A-03) with a prototype | [Your name] | TBD | Open |
+| OI-02 | Tune the retry and dead-letter defaults proposed in ADR-0004 by measurement | [Your name] | TBD | Open |
+| OI-03 | Check whether Kafka-native queue-style consumption (share groups, KIP-932) meets the need in the Kafka version in use | [Your name] | TBD | Open |
+| OI-04 | Define the idempotency guidance for service teams (follow-up of ADR-0002) | [Your name] | TBD | Open |
 
 ## 7. Decision log
 | ADR | Title | Status |
 |---|---|---|
 | [ADR-0001](../adr/adopt-consumer-proxy.md) | Adopt a consumer proxy between Kafka and consumer services | Proposed |
 | [ADR-0002](../adr/choose-at-least-once-delivery.md) | Choose at-least-once delivery with idempotent consumers | Proposed |
-| ADR-0003 | Define the per-key ordering mode | To write |
-| ADR-0004 | Choose retry and dead-letter topic policy | To write |
+| [ADR-0003](../adr/define-per-key-ordering-mode.md) | Define an optional per-key ordering mode | Proposed |
+| [ADR-0004](../adr/choose-retry-and-dead-letter-policy.md) | Choose a retry and dead-letter topic policy | Proposed |
 
 ## 8. Revision history
 | Version | Date | Change | Author |
 |---|---|---|---|
 | 0.1 | 2026-10-25 | Created | [Pelu Jeremiah] |
+| 0.2 | 2026-10-27 | Added ADR-0003 and ADR-0004; updated traceability, decision log and open issues | [Pelu Jeremiah] |

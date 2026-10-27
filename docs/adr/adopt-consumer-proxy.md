@@ -55,9 +55,9 @@ We will introduce a **consumer proxy layer** between Kafka and consumer services
 - Misconfiguration could affect many consumer services at once.
 
 **Follow-up ADRs (to write)**
-- [ADR-0002](choose-at-least-once-delivery.md): Choose at-least-once delivery with idempotent     consumers.
-- ADR-0003: Define the per-key ordering mode.
-- ADR-0004: Choose retry and dead-letter topic policy.
+- [ADR-0002](choose-at-least-once-delivery.md): Choose at-least-once delivery with idempotent consumers.
+- [ADR-0003](define-per-key-ordering-mode.md): Define the per-key ordering mode.
+- [ADR-0004](choose-retry-and-dead-letter-policy.md): Choose retry and dead-letter topic policy.
 
 **Review.** Compare the real behaviour against the evaluation criteria in the SRS (section 5) one month after any trial.
 
@@ -74,3 +74,4 @@ We will introduce a **consumer proxy layer** between Kafka and consumer services
 | Date | Change | Author |
 |---|---|---|
 | 2026-10-25 | Created | [Pelu Jeremiah] |
+| 2026-10-27 | Follow-up ADR links added (ADR-0003, ADR-0004) | [Pelu Jeremiah] |

@@ -18,8 +18,10 @@ recommends, together with a filled-in example for our earlier case study:
 └── docs
     ├── adr
     │   ├── template.md                      # ADR template (Michael Nygard style)
-    │   └── adopt-consumer-proxy.md          # ADR-0001: the decision behind the SRS
-    │   └── choose-at-least-once-delivery.md # ADR-0002: delivery semantics
+    │   ├── adopt-consumer-proxy.md          # ADR-0001: the decision behind the SRS
+    │   ├── choose-at-least-once-delivery.md # ADR-0002: delivery semantics
+    │   ├── define-per-key-ordering-mode.md  # ADR-0003: optional ordering per key
+    │   └── choose-retry-and-dead-letter-policy.md # ADR-0004: retries and DLQ
     └── srs
         ├── srs-template.md                  # blank, reusable SRS template
         └── define-consumer-proxy-requirements.md   # SRS filled in for this project
@@ -32,7 +34,7 @@ File names follow the ADR convention: lowercase, dashes, and a present-tense imp
 
 | Document | Answers | Changes when |
 |---|---|---|
-| **ADR** | *Why* I chose this architecture, and what follows from it? | A decision is made, amended or superseded |
+| **ADR** | *Why* did we choose this architecture, and what follows from it? | A decision is made, amended or superseded |
 | **SRS** | *What* must the system do, and how well? | Requirements change |
 
 Every requirement in the SRS links to the ADR that motivates it, and every ADR links back to the
